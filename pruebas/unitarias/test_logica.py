@@ -44,13 +44,11 @@ class TestPicas:
     """Verifica la detección de dígitos correctos en posición incorrecta."""
 
     def test_una_pica_digito_en_posicion_erronea(self):
-        # El '2' está en secreto pero en posición diferente
         resultado = calcular_picas_fijas("1234", "2000")
         assert resultado["picas"] == 1
         assert resultado["fijas"] == 0
 
     def test_cuatro_picas_todos_presentes_pero_rotados(self):
-        # Todos los dígitos correctos pero desplazados
         resultado = calcular_picas_fijas("1234", "2341")
         assert resultado["picas"] == 4
         assert resultado["fijas"] == 0
@@ -60,14 +58,6 @@ class TestPicas:
         assert resultado["picas"] == 2
 
     def test_una_pica_y_una_fija(self):
-        # secreto=1234, intento=2500 → fija: ninguna. pica: '2' existe pero en pos 0≠1
-        # Revisado: secreto=1234, intento=5123
-        # pos0: '5'!='1', '5' no en "1234" → nada
-        # pos1: '1'!='2', '1' en "1234" → pica
-        # pos2: '2'!='3', '2' en "1234" → pica
-        # pos3: '3'!='4', '3' en "1234" → pica  ← son 3 picas, no 2
-        # Ejemplo correcto: secreto=1234, intento=1560
-        # pos0: '1'=='1' → fija; pos1: '5'!='2', no existe; pos2: '6'!='3', no; pos3: '0'!='4', no
         resultado = calcular_picas_fijas("1234", "1560")
         assert resultado["fijas"] == 1   # solo el '1'
         assert resultado["picas"] == 0
