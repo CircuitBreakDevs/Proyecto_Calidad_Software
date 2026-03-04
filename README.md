@@ -1,87 +1,38 @@
-# Picas y Fijas 🎯
+# Picas y Fijas
 
-Juego de lógica para adivinar un número de 4 dígitos únicos. Proyecto académico para la asignatura de Calidad del Software.
+Juego de adivinar un número de 4 dígitos únicos. Una **fija** es un dígito en la posición correcta; una **pica** es un dígito que existe pero en otra posición.
 
-## Reglas del juego
+## Requisitos
 
-- **Fija** 🟩: Dígito correcto en la posición correcta
-- **Pica** 🟡: Dígito que existe en el número, pero en otra posición
-- El número secreto tiene **4 dígitos, todos diferentes**
+- Docker y Docker Compose instalados. No se necesita Python local.
 
-## Modos de juego
-
-- **Solo**: El sistema genera el número secreto. El jugador tiene **10 intentos**.
-- **PvP**: Dos jugadores se turnan para adivinar el número del oponente. Gana quien adivine primero.
-
----
-
-## 🚀 Cómo ejecutar (solo requiere Docker)
-
-### Levantar la aplicación
+## Ejecutar la aplicación
 
 ```bash
-docker compose up --build webapp db
+docker compose up --build webapp
 ```
 
-Luego abre tu navegador en: **http://localhost:8000**
+Abrir en el navegador: http://localhost:8000
 
-### Ejecutar pruebas unitarias y BDD (con coverage)
+## Pruebas
 
 ```bash
+# Pruebas unitarias + BDD con cobertura
 docker compose run --rm unitests
-```
 
-### Ejecutar pruebas End-to-End (Playwright)
-
-```bash
+# Pruebas End-to-End (Playwright)
 docker compose up --abort-on-container-exit e2e
-```
 
-### Ejecutar análisis estático (flake8)
-
-```bash
+# Analisis estatico
 docker compose run --rm webapp flake8 src/
 ```
 
----
+## Tecnologias usadas en pruebas
 
-## 📁 Estructura del proyecto
-
-```
-proyecto/
-├── src/
-│   ├── modelos/        # Lógica pura: validación y cálculo de picas/fijas
-│   ├── servicios/      # Gestión de estado: modo solo y PvP
-│   └── interfaz/       # API FastAPI + plantillas HTML
-├── pruebas/
-│   ├── unitarias/      # Pruebas por función, una clase por categoría
-│   ├── bdd/            # Escenarios Gherkin + step definitions
-│   └── e2e/            # Flujos completos con Playwright
-├── .github/workflows/  # CI: análisis estático + pruebas + coverage ≥ 80%
-├── Dockerfile
-├── docker-compose.yml
-└── requirements.txt
-```
-
----
-
-## 📋 Historias de Usuario
-
-| ID | Historia |
-|----|----------|
-| HU-1 | El jugador puede ingresar su nombre para identificarse |
-| HU-2 | El jugador puede jugar solo contra el sistema con 10 intentos |
-| HU-3 | Dos jugadores pueden jugar PvP turnándose; gana quien adivine primero |
-| HU-4 | El sistema calcula correctamente picas y fijas por cada intento |
-
----
-
-## ✅ Requerimientos de calidad implementados
-
-- [x] Historias de usuario con criterios de aceptación
-- [x] Pruebas unitarias (`pruebas/unitarias/`)
-- [x] Coverage configurado (mínimo 80%, via `--cov-fail-under=80`)
-- [x] Pruebas BDD con Gherkin (`pruebas/bdd/`)
-- [x] Pruebas E2E con Playwright (`pruebas/e2e/`)
-- [x] Análisis estático con flake8 (`.flake8`)
-- [x] CI automatizado con GitHub Actions (`.github/workflows/ci.yml`)
+| Herramienta | Uso |
+|---|---|
+| pytest | Framework de pruebas |
+| pytest-bdd | Pruebas BDD con Gherkin (.feature) |
+| pytest-cov | Cobertura de codigo (minimo 80%) |
+| playwright | Pruebas E2E en navegador real |
+| flake8 | Analisis estatico de codigo |
