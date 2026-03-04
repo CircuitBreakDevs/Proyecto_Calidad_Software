@@ -1,0 +1,19 @@
+# ─────────────────────────────────────────────────────────────────
+# .flake8: Configuración del análisis estático de código
+# Verifica estilo PEP-8 y posibles errores lógicos
+# ─────────────────────────────────────────────────────────────────
+[flake8]
+# Longitud máxima de línea permitida
+max-line-length = 100
+
+# Carpetas a excluir del análisis
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    *.egg-info
+
+# Códigos de error a ignorar:
+# W503 = salto de línea antes de operador binario (estilo permitido)
+extend-ignore = W503

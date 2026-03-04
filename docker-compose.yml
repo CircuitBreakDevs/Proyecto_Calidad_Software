@@ -1,0 +1,56 @@
+# ─────────────────────────────────────────────────────────────────
+# docker-compose.yml: Orquestación de servicios
+#
+# SIMPLIFICADO: sin base de datos. El estado del juego se guarda
+# en memoria dentro del proceso FastAPI.
+#
+# Servicios:
+#   - webapp:    API FastAPI (aplicación principal)
+#   - unitests:  Pruebas unitarias + BDD con coverage
+#   - e2e:       Pruebas End-to-End con Playwright
+#
+# Uso:
+#   Levantar la app:           docker compose up webapp
+#   Correr pruebas unitarias:  docker compose run --rm unitests
+#   Correr pruebas E2E:        docker compose up --abort-on-container-exit e2e
+# ─────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Aplicación Web (API FastAPI) ────────────────────────────
+  webapp:
+    build: .
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Pruebas Unitarias y BDD con Coverage ────────────────────
+  unitests:
+    build: .
+    command: >
+      pytest pruebas/unitarias pruebas/bdd
+      --cov=src
+      --cov-report=term-missing
+      --cov-fail-under=80
+      -v
+    volumes:
+      - .:/app
+    depends_on:
+      webapp:
+        condition: service_healthy
+
+  # ── Pruebas End-to-End con Playwright ───────────────────────
+  e2e:
+    build: .
+    command: pytest pruebas/e2e -v
+    volumes:
+      - .:/app
+    environment:
+      BASE_URL: http://webapp:8000
+    depends_on:
+      webapp:
+        condition: service_healthy

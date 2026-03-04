@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Picas y Fijas – Inicio</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --muted: #707070;
+      --accent: #ffffff;
+      --radius: 6px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 2.8rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    .mode-selector {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 0.55rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .mode-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #1e1e1e;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 0.95rem;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #555;
+    }
+
+    #sec-j2 {
+      display: none;
+    }
+
+    .btn-start {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 0.5rem;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-start:hover {
+      opacity: 0.88;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>Picas y Fijas</h1>
+    <p class="subtitle">Adivina el número de 4 dígitos únicos</p>
+
+    <div class="mode-selector">
+      <button id="btn-solo" class="mode-btn active" onclick="seleccionarModo('solo')">Solo</button>
+      <button id="btn-pvp" class="mode-btn" onclick="seleccionarModo('pvp')">Dos jugadores</button>
+    </div>
+
+    <form id="form-inicio" onsubmit="iniciarJuego(event)">
+      <div class="form-group">
+        <label for="nombre1">Tu nombre</label>
+        <input type="text" id="nombre1" placeholder="Jugador 1" required maxlength="30" />
+      </div>
+      <div id="sec-j2" class="form-group">
+        <label for="nombre2">Nombre del oponente</label>
+        <input type="text" id="nombre2" placeholder="Jugador 2" maxlength="30" />
+      </div>
+      <button type="submit" class="btn-start">Comenzar partida</button>
+    </form>
+  </div>
+
+  <script>
+    let modoJuego = 'solo';
+
+    function seleccionarModo(modo) {
+      modoJuego = modo;
+      document.getElementById('btn-solo').classList.toggle('active', modo === 'solo');
+      document.getElementById('btn-pvp').classList.toggle('active', modo === 'pvp');
+      const secJ2 = document.getElementById('sec-j2');
+      secJ2.style.display = modo === 'pvp' ? 'block' : 'none';
+      document.getElementById('nombre2').required = (modo === 'pvp');
+    }
+
+    async function iniciarJuego(event) {
+      event.preventDefault();
+      const nombre1 = document.getElementById('nombre1').value.trim();
+      const nombre2 = document.getElementById('nombre2').value.trim();
+
+      let url, body;
+      if (modoJuego === 'solo') {
+        url = '/solo/nuevo';
+        body = { nombre_jugador: nombre1 };
+      } else {
+        url = '/pvp/nuevo';
+        body = { nombre_jugador1: nombre1, nombre_jugador2: nombre2 };
+      }
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      localStorage.setItem('sesion', JSON.stringify({
+        ...data, modo: modoJuego, nombre1, nombre2
+      }));
+      window.location.href = '/tablero';
+    }
+  </script>
+</body>
+
+</html>

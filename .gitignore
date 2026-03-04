@@ -1,0 +1,36 @@
+# .gitignore para el proyecto Picas y Fijas
+# Archivos y carpetas que NO deben subirse al repositorio
+
+# ── Python ──────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# ── Entornos virtuales ───────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ── Cobertura y reportes de pytest ──────────────────────
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# ── Variables de entorno locales ─────────────────────────
+.env
+.env.local
+
+# ── Docker: datos persistentes de la BD ─────────────────
+db-data/
+
+# ── IDE ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp

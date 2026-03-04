@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Picas y Fijas – Tablero</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface2: #1c1c1c;
+            --border: #2a2a2a;
+            --text: #e0e0e0;
+            --muted: #606060;
+            --accent: #ffffff;
+            --verde: #4caf50;
+            --amarillo: #f5a623;
+            --rojo: #e53935;
+            --radius: 6px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            max-width: 500px;
+            margin: 0 auto 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        header p {
+            color: var(--muted);
+            font-size: 0.82rem;
+            margin-top: 0.2rem;
+        }
+
+        .tablero {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem 1.4rem;
+        }
+
+        .card-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-bottom: 0.8rem;
+        }
+
+        /* ── Barra de intentos ────────────────── */
+        .intentos-bar {
+            display: flex;
+            gap: 5px;
+        }
+
+        .intento-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 2px;
+            background: var(--border);
+        }
+
+        .intento-dot.usado {
+            background: #404040;
+        }
+
+        /* ── Configurar secreto PvP ──────────── */
+        #sec-pvp-setup {
+            display: none;
+        }
+
+        .banner-pvp {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 0.7rem;
+        }
+
+        /* ── Input de intento ─────────────────── */
+        .input-row {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .input-numero {
+            flex: 1;
+            padding: 0.6rem 0.8rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 1.1rem;
+            letter-spacing: 0.4em;
+            text-align: center;
+        }
+
+        .input-numero:focus {
+            outline: none;
+            border-color: #555;
+        }
+
+        .btn-accion {
+            padding: 0.6rem 1.2rem;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .btn-accion:hover {
+            opacity: 0.85;
+        }
+
+        .btn-accion:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* ── Historial ────────────────────────── */
+        .historial {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .fila-intento {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.5rem 0.9rem;
+        }
+
+        .fila-numero {
+            font-size: 1rem;
+            letter-spacing: 0.3em;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .fila-jugador {
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-left: 0.8rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            padding: 0.2rem 0.55rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-fija {
+            background: #1a3a1a;
+            color: var(--verde);
+            border: 1px solid #2e5e2e;
+        }
+
+        .badge-pica {
+            background: #3a2e0a;
+            color: var(--amarillo);
+            border: 1px solid #6e5010;
+        }
+
+        /* ── Mensaje final ────────────────────── */
+        #mensaje {
+            display: none;
+            padding: 0.9rem 1.2rem;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        #mensaje.gano {
+            background: #0d2010;
+            color: var(--verde);
+            border-color: #2e5e2e;
+        }
+
+        #mensaje.perdio {
+            background: #200d0d;
+            color: var(--rojo);
+            border-color: #5e1010;
+        }
+
+        .btn-secundario {
+            display: none;
+            width: 100%;
+            padding: 0.65rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: border-color 0.15s;
+        }
+
+        .btn-secundario:hover {
+            border-color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Picas y Fijas</h1>
+        <p id="subtitulo">Cargando...</p>
+    </header>
+
+    <div class="tablero">
+
+        <!-- Configurar secreto (solo en modo PvP) -->
+        <div id="sec-pvp-setup" class="card">
+            <div class="card-label">Configurar número secreto</div>
+            <p class="banner-pvp" id="banner-pvp-setup"></p>
+            <div class="input-row">
+                <input type="text" id="input-secreto" class="input-numero" maxlength="4" placeholder="_ _ _ _" />
+                <button class="btn-accion" onclick="configurarSecretoPvP()">Guardar</button>
+            </div>
+        </div>
+
+        <!-- Intentos restantes (solo en modo solo) -->
+        <div id="sec-intentos" class="card">
+            <div class="card-label">Intentos restantes</div>
+            <div id="intentos-bar" class="intentos-bar"></div>
+        </div>
+
+        <!-- Input de intento -->
+        <div class="card" id="sec-jugar">
+            <div class="card-label" id="label-turno">Tu intento</div>
+            <div class="input-row">
+                <input type="text" id="input-intento" class="input-numero" maxlength="4" placeholder="_ _ _ _" />
+                <button class="btn-accion" id="btn-intentar" onclick="realizarIntento()">Intentar</button>
+            </div>
+        </div>
+
+        <!-- Historial de intentos -->
+        <div class="card">
+            <div class="card-label">Historial</div>
+            <div id="historial" class="historial"></div>
+        </div>
+
+        <!-- Resultado final -->
+        <div id="mensaje"></div>
+        <button class="btn-secundario" id="btn-reiniciar" onclick="window.location.href='/'">
+            Jugar de nuevo
+        </button>
+    </div>
+
+    <script>
+        const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
+        const modo = sesion.modo || 'solo';
+        const sesionId = sesion.sesion_id;
+        let pvpSecretos = 0;
+        let jugadorActualPvP = sesion.nombre1;
+
+        // ── Inicializar según el modo ────────────────────────────
+        function inicializar() {
+            if (modo === 'solo') {
+                document.getElementById('subtitulo').textContent =
+                    `Modo solo — ${sesion.nombre1} — 10 intentos`;
+                renderBarraIntentos(10, 0);
+                document.getElementById('sec-pvp-setup').style.display = 'none';
+            } else {
+                document.getElementById('subtitulo').textContent =
+                    `PvP — ${sesion.nombre1} vs ${sesion.nombre2}`;
+                document.getElementById('sec-pvp-setup').style.display = 'block';
+                document.getElementById('sec-jugar').style.display = 'none';
+                document.getElementById('sec-intentos').style.display = 'none';
+                document.getElementById('banner-pvp-setup').textContent =
+                    `${sesion.nombre1}: ingresa tu número secreto`;
+            }
+        }
+
+        // ── Barra de puntos de intentos ──────────────────────────
+        function renderBarraIntentos(total, usados) {
+            const bar = document.getElementById('intentos-bar');
+            bar.innerHTML = '';
+            for (let i = 0; i < total; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'intento-dot' + (i < usados ? ' usado' : '');
+                bar.appendChild(dot);
+            }
+        }
+
+        // ── PvP: configurar secreto ──────────────────────────────
+        async function configurarSecretoPvP() {
+            const secreto = document.getElementById('input-secreto').value.trim();
+            const nombre = pvpSecretos === 0 ? sesion.nombre1 : sesion.nombre2;
+
+            const res = await fetch('/pvp/secreto', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sesion_id: sesionId, nombre_jugador: nombre, secreto }),
+            });
+            const data = await res.json();
+
+            if (!data.valido) { alert(data.mensaje); return; }
+
+            document.getElementById('input-secreto').value = '';
+            pvpSecretos++;
+
+            if (data.juego_listo) {
+                jugadorActualPvP = sesion.nombre1;
+                document.getElementById('sec-pvp-setup').style.display = 'none';
+                document.getElementById('sec-jugar').style.display = 'block';
+                document.getElementById('label-turno').textContent = `Turno de ${jugadorActualPvP}`;
+            } else {
+                document.getElementById('banner-pvp-setup').textContent =
+                    `${sesion.nombre2}: ingresa tu número secreto`;
+            }
+        }
+
+        // ── Realizar un intento ──────────────────────────────────
+        async function realizarIntento() {
+            const intento = document.getElementById('input-intento').value.trim();
+            let url, body;
+
+            if (modo === 'solo') {
+                url = '/solo/intento';
+                body = { sesion_id: sesionId, intento };
+            } else {
+                url = '/pvp/intento';
+                body = { sesion_id: sesionId, nombre_jugador: jugadorActualPvP, intento };
+            }
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            document.getElementById('input-intento').value = '';
+
+            if (data.valido === false) { alert(data.mensaje); return; }
+
+            agregarFila(intento, data.resultado, modo === 'pvp' ? jugadorActualPvP : null);
+
+            if (modo === 'solo') renderBarraIntentos(10, 10 - data.intentos_restantes);
+
+            if (data.terminado || data.gano) {
+                finalizarPartida(data);
+            } else if (modo === 'pvp' && data.siguiente_turno) {
+                jugadorActualPvP = data.siguiente_turno;
+                document.getElementById('label-turno').textContent = `Turno de ${jugadorActualPvP}`;
+            }
+        }
+
+        // ── Agregar fila al historial ────────────────────────────
+        function agregarFila(numero, resultado, jugador) {
+            const historial = document.getElementById('historial');
+            const fila = document.createElement('div');
+            fila.className = 'fila-intento';
+            const jugadorTag = jugador
+                ? `<span class="fila-jugador">${jugador}</span>` : '';
+            fila.innerHTML = `
+        <div>
+          <span class="fila-numero">${numero}</span>
+          ${jugadorTag}
+        </div>
+        <div class="badges">
+          <span class="badge badge-fija">${resultado.fijas} F</span>
+          <span class="badge badge-pica">${resultado.picas} P</span>
+        </div>`;
+            historial.prepend(fila);
+        }
+
+        // ── Finalizar partida ────────────────────────────────────
+        function finalizarPartida(data) {
+            const msg = document.getElementById('mensaje');
+            msg.textContent = data.mensaje;
+            msg.className = data.gano ? 'gano' : 'perdio';
+            msg.style.display = 'block';
+            document.getElementById('btn-intentar').disabled = true;
+            document.getElementById('btn-reiniciar').style.display = 'block';
+        }
+
+        inicializar();
+    </script>
+</body>
+
+</html>
