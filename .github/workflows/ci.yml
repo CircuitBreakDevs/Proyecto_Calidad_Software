@@ -31,6 +31,8 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     container:
       image: python:3.11
 
@@ -63,6 +65,8 @@ jobs:
     name: SonarCloud Check
     runs-on: ubuntu-latest
     needs: unit-tests
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     steps:
       - name: Clonar repositorio con full history para SonarCloud
