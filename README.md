@@ -23,8 +23,6 @@ docker compose run --rm unitests
 # Pruebas End-to-End (Playwright)
 docker compose up --abort-on-container-exit e2e
 
-# Analisis estatico
-docker compose run --rm webapp flake8 src/
 ```
 
 ## Tecnologias usadas en pruebas
@@ -35,4 +33,7 @@ docker compose run --rm webapp flake8 src/
 | pytest-bdd | Pruebas BDD con Gherkin (.feature) |
 | pytest-cov | Cobertura de codigo (minimo 80%) |
 | playwright | Pruebas E2E en navegador real |
-| flake8 | Analisis estatico de codigo |
+
+## SonarQube
+
+[Picas y Fijas](https://sonarcloud.io/project/overview?id=CircuitBreakDevs_Proyecto_Calidad_Software)
