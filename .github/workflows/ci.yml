@@ -31,7 +31,7 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     container:
-      image: python:3.11-slim
+      image: python:3.11
 
     steps:
       - name: Clonar repositorio
@@ -42,7 +42,7 @@ jobs:
 
       - name: Ejecutar pruebas con coverage
         run: |
-          pytest pruebas/ \
+          pytest pruebas/unitarias pruebas/bdd \
             --cov=src \
             --cov-report=term-missing \
             --cov-report=xml \
