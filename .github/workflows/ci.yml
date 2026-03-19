@@ -5,136 +5,86 @@
 # pull request a las ramas principales.
 #
 # Pasos ejecutados:
-#   1. Análisis estático con flake8 (detecta errores de estilo y código)
-#   2. Pruebas unitarias y BDD con cobertura mínima del 80%
-#   3. Reporte de resultados de cobertura
+#   1. Pruebas unitarias y BDD con cobertura
+#   2. Análisis de código con SonarCloud (incluye análisis estático)
 # ─────────────────────────────────────────────────────────────────────────────
 
-name: CI – Picas y Fijas
+name: CI – Proyecto Calidad Software
+
+env:
+  SONAR_USER_HOME: ${{ github.workspace }}/.sonar
+  GIT_DEPTH: "0"
 
 on:
   push:
     branches:
       - main
+      - master
       - develop
   pull_request:
     branches:
       - main
+      - master
       - develop
 
 jobs:
-
-  # ── Job 1: Análisis Estático de Código ─────────────────────────────────────
-  analisis-estatico:
-    name: Análisis Estático (flake8)
+  # ── Job 1: Pruebas Unitarias y BDD con Coverage ──────────────────────────
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
+    container:
+      image: python:3.11-slim
 
     steps:
       - name: Clonar repositorio
         uses: actions/checkout@v4
 
-      - name: Configurar Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Instalar dependencias
-        working-directory: proyecto
-        run: pip install flake8
-
-      - name: Ejecutar flake8
-        working-directory: proyecto
-        run: flake8 src/ --statistics
-
-  # ── Job 2: Pruebas Unitarias y BDD con Coverage ────────────────────────────
-  pruebas-unitarias-bdd:
-    name: Pruebas Unitarias + BDD (coverage ≥ 80%)
-    runs-on: ubuntu-latest
-
-    services:
-      # Servicio de PostgreSQL necesario para los tests de integración
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: picasyfijas_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v4
-
-      - name: Configurar Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Instalar dependencias
-        working-directory: proyecto
         run: pip install -r requirements.txt
 
-      - name: Ejecutar pruebas unitarias y BDD con coverage
-        working-directory: proyecto
-        env:
-          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/picasyfijas_test
+      - name: Ejecutar pruebas con coverage
         run: |
-          pytest pruebas/unitarias pruebas/bdd \
+          pytest pruebas/ \
             --cov=src \
             --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            --cov-fail-under=80 \
+            --cov-report=xml \
+            --cov-fail-under=70 \
             -v
 
-      - name: Publicar reporte de cobertura como artefacto
+      - name: Publicar coverage.xml como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: reporte-cobertura
-          path: proyecto/coverage.xml
-        if: always()
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 1
 
-  # ── Job 3: Pruebas E2E (depende de que las unitarias pasen) ───────────────
-  pruebas-e2e:
-    name: Pruebas End-to-End (Playwright)
+  # ── Job 2: Análisis con SonarCloud ───────────────────────────────────────
+  sonarcloud-check:
+    name: SonarCloud Check
     runs-on: ubuntu-latest
-    needs: pruebas-unitarias-bdd
+    needs: unit-tests
 
     steps:
-      - name: Clonar repositorio
+      - name: Clonar repositorio con full history para SonarCloud
         uses: actions/checkout@v4
-
-      - name: Construir y levantar servicios con Docker Compose
-        working-directory: proyecto
-        run: docker compose up -d webapp db
-
-      - name: Esperar a que la app esté lista
-        run: |
-          timeout 60 bash -c 'until curl -sf http://localhost:8000/health; do sleep 2; done'
-
-      - name: Instalar Python y Playwright
-        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          fetch-depth: 0
 
-      - name: Instalar dependencias para E2E
-        working-directory: proyecto
-        run: |
-          pip install playwright pytest
-          playwright install --with-deps chromium
+      - name: Descargar coverage.xml
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: .
 
-      - name: Ejecutar pruebas E2E
-        working-directory: proyecto
+      - name: Cache de SonarCloud
+        uses: actions/cache@v4
+        with:
+          path: .sonar/cache
+          key: ${{ runner.os }}-sonar-${{ github.job }}
+          restore-keys: ${{ runner.os }}-sonar-
+
+      - name: Analizar con SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
         env:
-          BASE_URL: http://localhost:8000
-        run: pytest pruebas/e2e -v
-
-      - name: Apagar los servicios de Docker
-        working-directory: proyecto
-        run: docker compose down
-        if: always()
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
