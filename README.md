@@ -23,14 +23,15 @@ docker compose run --rm unitests
 # Pruebas End-to-End (Playwright)
 docker compose up --abort-on-container-exit e2e
 
-# Pruebas de Carga y Rendimiento (K6)
-# 1. Asegúrate de que la aplicación esté corriendo:
-# docker compose up -d webapp
-# 2. Ejecuta una de las pruebas de K6 (smoke, stress, spike o soak):
-# En PowerShell (Windows):
-Get-Content pruebas\carga\smoke.js | docker run --rm -i grafana/k6 run -
-# O en CMD / Git Bash / Mac / Linux:
-docker run --rm -i grafana/k6 run - < pruebas/carga/smoke.js
+
+# Pruebas de Carga (K6)
+# NOTA: Usar host.docker.internal para que K6 encuentre el puerto 8000 en Windows
+
+# En PowerShell (para correr cada prueba individualmente):
+Get-Content pruebas\carga\smoke.js | docker run --rm -i -e API_URL=http://host.docker.internal:8000 grafana/k6 run -
+Get-Content pruebas\carga\stress.js | docker run --rm -i -e API_URL=http://host.docker.internal:8000 grafana/k6 run -
+Get-Content pruebas\carga\spike.js | docker run --rm -i -e API_URL=http://host.docker.internal:8000 grafana/k6 run -
+Get-Content pruebas\carga\soak.js | docker run --rm -i -e API_URL=http://host.docker.internal:8000 grafana/k6 run -
 
 ```
 
